@@ -36,6 +36,11 @@ const IHDR = Buffer.from([0x49, 0x48, 0x44, 0x52]);
 if (!image.subarray(12, 16).equals(IHDR)) {
   throw new Error("entry.png has no IHDR chunk (not a valid PNG)");
 }
+// An IHDR chunk always carries exactly 13 bytes of data; any other length
+// means the header is corrupt and the width/height below cannot be trusted.
+if (image.readUInt32BE(8) !== 13) {
+  throw new Error("entry.png IHDR chunk has a bad length (expected 13)");
+}
 const width = image.readUInt32BE(16);
 const height = image.readUInt32BE(20);
 if (width === 0 || height === 0) {
